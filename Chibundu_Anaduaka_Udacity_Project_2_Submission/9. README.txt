@@ -1,0 +1,56 @@
+# Name: Chibundu Anaduaka
+# Programme: Udacity Cloud DevOps Engineer NanoDegree Course
+# Submission: Project 2 - Deploy a high-availability web app using CloudFormation
+# Date: 5th May 2021
+
+# 1. Shell scripts were used to create, update and delete the CloudFormation stacks programmatically in AWS using the AWS CLI via a local terminal. This was done to ease the process of frequently calling the AWS cloud formation commands which requested a number of command flags such as the stack-name, template-body, parameters, capabilities, and region. The AWS region "eu-west-2" (London) was used to deploy the stack resources in for the purpose of this project. The 3 shell scripts ["cf-create.sh", "cf-update.sh", "cf-delete.sh"] used to carry out the CloudFormation commands have been attached as part of this submission.
+
+# 2. A diagram of the stack architecture was created using Lucid Chart. The diagram details all the network infrastructure and servers required to host the udagram application in AWS. The diagram consists of: 
+ - A VPC were all the stack resources will be deployed to on AWS; 
+ - An Internet Gateway attached to the VPC were all traffic coming and going between the internet and the VPC will pass through; 
+ - 2 Public Subnets and 2 Private Subnets spread across 2 Availability Zones for resilience and high availability of the udagram application;
+ -  A route table to direct all traffic around the VPC; 
+ - 2 NAT Gateways spread across the 2 Public Subnets to allow for Network Access Translation of traffic coming from the Application Servers in the Private Subnets that are directed to the internet. Each NAT Gateway was attached with an Elastic IP address;
+ - An Application Load Balancer to balance incoming traffic from the internet across the Application Servers;
+ - 4 Application Servers in an Auto Scaling group spread across the 2 Private Subnets to host the udagram application in a resilient and highly available manner;
+ - A Bastion Host server in one of the Public Subnets as a temporary jump box to connect to the Application Servers in the Private Subnets if required;
+ - One Security Group for the Application Servers and another Security Group for the Bastion Host Server to restrict specific traffic access to each server group respectively;
+ - An S3 bucket from which the Application Servers will retrieve the latest version of application code to be built and deployed.
+The Lucid Chart diagram of the stack architecture has been attached as part of this submission.
+
+# 3. The Udagram app cloud architecture was built using two CloudFormation stacks for ease and convenience.
+
+A. The Network Stack:
+
+The Network Stack portion of the Udagram app architecture consists of the following resources:
+ - A VPC; 2 Public and 2 Private Subnets; 2 NAT Gateways each with a NAT Gateway EIP; A Public Route Table with Default Route and a Route Table Association for each Public Subnet; 2 Private Route Tables each with a Default Route and a Route Table Association to each Private Subnet; An Internet Gateway and an Internet Gateway Attachment to the VPC.
+
+The following parameters were used to create the network stack:
+ - An Environment Name to tag the resources created in the stack with for easy identification; A CIDR for the VPC; A CIRR for each subnet.
+These values were chosen to be parameterised as they as values that are likely to be changed based on the discretion of the deployer.
+
+The following values were made to be outputed from the created stack to be used as input values for other stack creations:
+ - The VPC ID; The Subnet ID for each Subnet; 2 lists of Subnet IDs, one containing the Public Subnets IDs, and the other containing the Private Subnets IDs.
+
+Screenshots of the Stack overview, resources, parameters and outputs have been attached as part of this submission. As well as the files used for the template body "udagram-network.yml", and parameters "network-parameters.json". 
+
+B. The Environment Stack:
+
+The Server Stack portion of the Udagram app architecture consists of the following resources:
+ - An Application Load Balancer with a Listener and a Listener Rule; A Security Group for the Load Balancer with a modified Outbound Rule; A Security Group for the Bastion Server; A Security Group for the Application Servers with modified Inbound and Outbound Rules; An AutoScaling Group for the Application Servers; A Launch Configuration for the Application Servers; A Target Group for the Application Servers; A Role Profile for the Application Servers.
+
+The following parameters were used to create the environment stack:
+ - An Environment Name to tag the resources created in the stack with for easy identification; The ID for an Amazon Machine Image that runs an Ubuntu 18 Operating System; A suitable Machine Instance Type that uses 2 vCPUs and at least 4 GB of RAM; The Maximum, Minimum and Desired size of the Application Servers AutoScaling Group; The Storage size of the Application Servers Disk Space; The IP address of the home PC to be used for restricted ssh connections into the Bastion Host Server (Dummy IP address used for the purpose of this project).
+These values were chosen to be parameterised as they as values that are likely to be changed based on the discretion of the deployer. Values like the AMI ID change per region, so was parameterised in the scenario the deployed need to create the stack in another region.
+
+The following values were made to be outputed from the created stack:
+ - The Application Servers Load Balancer DNS Name. To be used to access the application via a web browser using http.
+
+Screenshots of the Stack overview, resources, parameters and outputs have been attached as part of this submission. As well as the files used for the template body "udagram-environment.yml", and parameters "environment-parameters.json". 
+
+
+# **Application Load Balancer DNSName: http://UdagramApp-53041804.eu-west-2.elb.amazonaws.com 
+# **The Bastion Host Server was not created as part of the CloudFormation stack as this server will only be required in the scenario of troubleshooting issues with the Application Server which should not be too often if the stacks are created properly. Thus the Bastion Host Server can be created externally from the CloudFormation template on a need basis in order to save cost. The Security Group that will be needed for the Server however, is created as part of the CloudFormation stack as Security Groups are not charged for in AWS, so there is no added cost for creating this, and it will ease the speed and convenience when creating Bastion Host Server as the already existing Security Group can be attached when needed and not required to be created in that instance.
+# **The Application Servers were designed to only receive incoming web traffic on port 80 from the Load Balancer via its Security Group, and incoming ssh traffic on port 22 from the Bastion Host Server via its Security Group.
+# **The Application Servers AutoScaling Group were configured to use the Elastic Load Balancing Health Checks with an Interval period of 10s, a Time-out period of 5s and a grace period of 2s.
+# **A compute optimised instance type was used for the Application servers are they are well suited for high performing web-servers.
