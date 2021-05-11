@@ -49,7 +49,7 @@ The following values were made to be outputed from the created stack:
 Screenshots of the Stack overview, resources, parameters and outputs have been attached as part of this submission. As well as the files used for the template body "udagram-environment.yml", and parameters "environment-parameters.json". 
 
 
-# **Application Load Balancer DNSName: http://UdagramApp-53041804.eu-west-2.elb.amazonaws.com 
+# **Application Load Balancer DNSName: http://udagramapp-359120860.eu-west-2.elb.amazonaws.com/
 # **The Bastion Host Server was not created as part of the CloudFormation stack as this server will only be required in the scenario of troubleshooting issues with the Application Server which should not be too often if the stacks are created properly. Thus the Bastion Host Server can be created externally from the CloudFormation template on a need basis in order to save cost. The Security Group that will be needed for the Server however, is created as part of the CloudFormation stack as Security Groups are not charged for in AWS, so there is no added cost for creating this, and it will ease the speed and convenience when creating Bastion Host Server as the already existing Security Group can be attached when needed and not required to be created in that instance.
 # **The Application Servers were designed to only receive incoming web traffic on port 80 from the Load Balancer via its Security Group, and incoming ssh traffic on port 22 from the Bastion Host Server via its Security Group.
 # **The Application Servers AutoScaling Group were configured to use the Elastic Load Balancing Health Checks with an Interval period of 10s, a Time-out period of 5s and a grace period of 2s.
