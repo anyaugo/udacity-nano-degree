@@ -15,13 +15,17 @@ Parameters:
 
   AmiId:
     Description: The Amazon Machine Image Id to use for the app servers
-    Type: String
+    Type: AWS::EC2::Image::Id
     Default: ami-0a858bf97b16a537c
 
   MachineInstanceType:
-    Description: The machine instance type to use for the app servers
+    Description: The machine instance type to use for the app servers. Specify from allowed values.
     Type: String
     Default: c5a.large
+    AllowedValues:
+      - t2.micro
+      - t3.medium
+      - c5a.large
 
   EbsVolumeSize:
     Description: The EBS volume size to use
@@ -86,7 +90,6 @@ Resources:
 
   AppServerSGInboundRule1:
     Type: AWS::EC2::SecurityGroupIngress
-    DependsOn: LBSG
     Properties:
       GroupId: !Ref AppServerSG
       IpProtocol: tcp
@@ -96,7 +99,6 @@ Resources:
 
   AppServerSGInboundRule2:
     Type: AWS::EC2::SecurityGroupIngress
-    DependsOn: BastionServerSG
     Properties:
       GroupId: !Ref AppServerSG
       IpProtocol: tcp
@@ -124,6 +126,27 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName}-BastionServerSG
 
+  BastionServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref AmiId
+      InstanceType: t2.micro
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: "0"
+          GroupSet:
+            - Ref: BastionServerSG
+          SubnetId:
+            Fn::ImportValue: !Sub ${EnvironmentName}-PUB-SN1
+
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 10
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-BastionServer
+
   AppServerRoleProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -134,8 +157,7 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       UserData:
-        Fn::Base64: 
-          !Sub |
+        Fn::Base64: |
           #!/bin/bash
           apt-get update -y
           apt-get install unzip awscli -y
@@ -168,7 +190,7 @@ Resources:
       TargetGroupARNs:
         - Ref: AppServerTargetGroup
       HealthCheckType: ELB
-      HealthCheckGracePeriod: 2
+      HealthCheckGracePeriod: 15
       Tags:
         - Key: Name
           PropagateAtLaunch: true

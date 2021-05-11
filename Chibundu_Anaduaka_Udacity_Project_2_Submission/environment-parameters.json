@@ -21,11 +21,11 @@
     },
     {
         "ParameterKey": "AutoScalingDesiredSize",
-        "ParameterValue": "4"
+        "ParameterValue": "1"
     },
     {
         "ParameterKey": "AutoScalingMinSize",
-        "ParameterValue": "4"
+        "ParameterValue": "1"
     },
     {
         "ParameterKey": "AutoScalingMaxSize",
