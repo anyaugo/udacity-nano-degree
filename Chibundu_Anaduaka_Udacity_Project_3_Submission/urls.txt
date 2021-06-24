@@ -1,0 +1,5 @@
+[URL01] https://github.com/anyaugo/udacity-cicd-project
+[URL02] http://udapeople-5b8d3de.s3-website.eu-west-2.amazonaws.com
+[URL03] https://d3jkw928j2appl.cloudfront.net/#/employees
+[URL04] ec2-18-132-248-163.eu-west-2.compute.amazonaws.com
+[URL05] ec2-3-9-188-243.eu-west-2.compute.amazonaws.com[:9090,Prometheus][:9093,AlertManager]
